@@ -1,2 +1,3 @@
-avt1.jpg#Tran Minh Quang#tmquang0209@gmail.com#administrator#tmquang#123#false
-avt2.jpg#Tran Quang#minhquang@gmail.com#standard_user#tmquang1#123#true
+avt1.jpg#Tran Minh Quang#tmquang0209@gmail.com#1234567#administrator#tmquang#123#false#0
+avt2.jpg#Tran Quang#minhquang@gmail.com#1234567#standard_user#tmquang1#123#false#1
+avt3.jpg#Tran Quang#minhquang@gmail.com#1234567#standard_user#tmquang2#123#true#1
