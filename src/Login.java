@@ -17,9 +17,9 @@ import javax.swing.SwingConstants;
 public class Login extends JFrame {
 //	private AccountList accountList;
 
-	private JTextField textField;
+	private JTextField usernameField;
 	private JPasswordField passwordField;
-	private JButton btnNewButton;
+	private JButton btnSubmit;
 	private JLabel lblTest;
 	private JPanel contentPane;
 	private AccountManage accountManage;
@@ -122,8 +122,6 @@ public class Login extends JFrame {
 	}
 
 	public Login(AccountManage accountManage) {
-		AccountList accountList = accountManage.getAccountList();
-
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(150, 50, 800, 600);
 		setResizable(false);
@@ -138,11 +136,11 @@ public class Login extends JFrame {
 		lblNewLabel.setBounds(0, 11, 786, 93);
 		contentPane.add(lblNewLabel);
 
-		textField = new JTextField();
-		textField.setFont(new Font("Tahoma", Font.PLAIN, 32));
-		textField.setBounds(294, 166, 450, 50);
-		contentPane.add(textField);
-		textField.setColumns(10);
+		usernameField = new JTextField();
+		usernameField.setFont(new Font("Tahoma", Font.PLAIN, 32));
+		usernameField.setBounds(294, 166, 450, 50);
+		contentPane.add(usernameField);
+		usernameField.setColumns(10);
 
 		passwordField = new JPasswordField();
 		passwordField.setFont(new Font("Tahoma", Font.PLAIN, 32));
@@ -163,38 +161,45 @@ public class Login extends JFrame {
 		lblPassword.setBounds(70, 286, 226, 50);
 		contentPane.add(lblPassword);
 
-		btnNewButton = new JButton("Login");
-		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 26));
-		btnNewButton.setBounds(320, 410, 147, 52);
-		btnNewButton.addActionListener(new ActionListener() {
+		btnSubmit = new JButton("Login");
+		btnSubmit.setFont(new Font("Tahoma", Font.PLAIN, 26));
+		btnSubmit.setBounds(320, 410, 147, 52);
+		
+		btnSubmit.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				String username = textField.getText();
+				String username = usernameField.getText();
 				String password = passwordField.getText();
 				if (username.isEmpty() || password.isEmpty()) {
-					JOptionPane.showMessageDialog(btnNewButton, "Vui lòng nhập đủ thông tin.");
-				} else if (!accountList.checkAccount(username, password)) {
-					JOptionPane.showMessageDialog(btnNewButton, "Tài khoản hoặc mật khẩu không chính xác.");
-				} else if (accountList.checkDisable(username)) {
-					JOptionPane.showMessageDialog(btnNewButton, "Tài khoản đã bị vô hiệu hóa");
+					JOptionPane.showMessageDialog(btnSubmit, "Vui lòng nhập đủ thông tin.");
+				} else if (!accountManage.checkAccount(username, password)) {
+					JOptionPane.showMessageDialog(btnSubmit, "Tài khoản hoặc mật khẩu không chính xác.");
+				} else if (accountManage.checkDisable(username)) {
+					JOptionPane.showMessageDialog(btnSubmit, "Tài khoản đã bị vô hiệu hóa");
+
 				} else {
-					JOptionPane.showMessageDialog(btnNewButton, "Đăng nhập thành công");
 					accountManage.setLogin(true);
 					accountManage.saveSessionLogin(username);
-					// Create an instance of the Home class
-					Home home = new Home(accountManage);
+					if (accountManage.checkChangePassword(username)) {
+						JOptionPane.showMessageDialog(btnSubmit, "Bạn cần thay đổi mật khẩu");
+						ChangePassword changePw = new ChangePassword(accountManage);
+						changePw.setVisible(true);
+					} else {
+						JOptionPane.showMessageDialog(btnSubmit, "Đăng nhập thành công");
+						// Create an instance of the Home class
+						Home home = new Home(accountManage);
+						home.setVisible(true);
+					}
 
 					// Close the existing login frame
 					dispose();
 
 					// Show the Home frame
-					home.setVisible(true);
 				}
-				// if set password change on first login => redirect to password change form
 			}
 		});
 
-		contentPane.add(btnNewButton);
+		contentPane.add(btnSubmit);
 		setVisible(true);
 		System.out.println(123);
 	}
