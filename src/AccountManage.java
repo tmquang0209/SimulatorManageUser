@@ -1,4 +1,5 @@
 import java.util.ArrayList; // Import the File class
+import java.io.File;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -9,7 +10,7 @@ public class AccountManage {
 	private boolean isLogin;
 	private AccountList accountList;
 	private AccountInfo accountInfo;
-//	private ActivityLog logAct;
+	// private ActivityLog logAct;
 
 	public AccountManage() {
 		isLogin = false;
@@ -47,10 +48,9 @@ public class AccountManage {
 	public void setAccountInfo(AccountInfo accountInfo) {
 		this.accountInfo = accountInfo;
 	}
-	
+
 	public boolean checkAccount(String username, String password) {
 		for (AccountInfo acc : accountList.getList()) {
-			System.out.println("123: "+acc.getUsername() + "\t" + acc.getPassword());
 			if (acc.getUsername().equals(username) && acc.getPassword().equals(password))
 				return true;
 		}
@@ -67,28 +67,35 @@ public class AccountManage {
 	}
 
 	/*
-	 * Error code: 
-	 * -1: The old password is incorrect. 
-	 * -2: Re-enter the new password isn't the same.
-	 * -99: Unknown
+	 * Error code: -1: The old password is incorrect. -2: Re-enter the new password
+	 * isn't the same. -99: Unknown
 	 */
-	public int changePassword(String username, String oldPassword, String newPassword, String reenteredPassword) {
-	    if (!newPassword.equals(reenteredPassword)) {
-	        return -2; // Re-entered password doesn't match
-	    }
-
-	    for (AccountInfo info : accountList.getList()) {
-	        if (info.getUsername().equals(username)) {
-	            if (info.getPassword().equals(oldPassword)) {
-	                info.setPassword(newPassword);
-	                return 1; // Password changed successfully
-	            } else {
-	                return -1; // Incorrect old password
-	            }
-	        }
-	    }
-	    return -99; // Unknown error, username not found
+	public void changePassword(String newPassword) {
+		writeFile(newPassword);
+		accountInfo.setPassword(newPassword);
+		accountList = new AccountList();
+		readFile();
 	}
+
+//	public int changePassword(String username, String oldPassword, String newPassword, String reenteredPassword) {
+//		if (!newPassword.equals(reenteredPassword)) {
+//			return -2; // Re-entered password doesn't match
+//		}
+//
+//		for (AccountInfo info : accountList.getList()) {
+//			if (info.getUsername().equals(username)) {
+//				if (info.getPassword().equals(oldPassword)) {
+//					info.setPassword(newPassword);
+//					accountList = new AccountList();
+//					readFile();
+//					return 1; // Password changed successfully
+//				} else {
+//					return -1; // Incorrect old password
+//				}
+//			}
+//		}
+//		return -99; // Unknown error, username not found
+//	}
 
 	public void saveSessionLogin(String username) {
 		setAccountInfo(accountList.getInfoUser(username));
@@ -105,28 +112,29 @@ public class AccountManage {
 			// Close the writer
 			bufferedWriter.close();
 
-			System.out.println("Data has been written to the file successfully.");
+			System.out.println("Login session saved successfully.");
 		} catch (IOException e) {
-			System.out.println("An error occurred while writing to the file.");
+			System.out.println("Login session saved failed.");
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean checkChangePassword(String username) {
 		for (AccountInfo info : accountList.getList()) {
-	        if (info.getUsername().equals(username)) {
-	            return info.getChangePassword() == 1;
-	        }
-	    }
+			if (info.getUsername().equals(username)) {
+				return info.getChangePassword() == 1;
+			}
+		}
 		return false;
 	}
-	
+
 	public void readFile() {
 		try {
 			FileReader reader = new FileReader("src/account.txt");
 			BufferedReader bufferedReader = new BufferedReader(reader);
 			String line;
 
+			System.out.println("==== Account List ===");
 			while ((line = bufferedReader.readLine()) != null) {
 				String[] getElement = line.split("#");
 
@@ -139,14 +147,65 @@ public class AccountManage {
 				String password = getElement[6];
 				boolean isDisable = getElement[7].equals("true");
 				int changePassword = Integer.parseInt(getElement[8]);
-
-				AccountInfo account = new AccountInfo(avatar, fullname, email, phone, type, username, password, isDisable, changePassword);
+				System.out.println(username + "\t" + password);
+				AccountInfo account = new AccountInfo(avatar, fullname, email, phone, type, username, password,
+						isDisable, changePassword);
 				accountList.setObjToList(account);
 			}
+			System.out.println("======================");
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void writeFile(String newPassword) {
+		String fileName = "src/account.txt";
+		String searchString = "#" + accountInfo.getPassword() + "#";
+		String replacementString = "#" + newPassword + "#";
+		String tempFileName = "src/account_temp.txt";
+
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName));
+				BufferedWriter writer = new BufferedWriter(new FileWriter(tempFileName))) {
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.contains(accountInfo.getUsername())) {
+					// change password in file
+					line = line.replace(searchString, replacementString);
+					// disable password change on first login
+					line = line.replace("#1", "#0");
+				}
+				writer.write(line);
+				writer.newLine();
+			}
+
+			System.out.println("String replacement is complete.");
+
+		} catch (IOException e) {
+			System.out.println("An error occurred while processing the file.");
+			e.printStackTrace();
+		}
+
+		// Replace the original file with the temporary file
+		File originalFile = new File(fileName);
+		File tempFile = new File(tempFileName);
+
+		// Delete the original file
+		if (originalFile.delete()) {
+			System.out.println("Original file deleted successfully.");
+		} else {
+			System.out.println("Failed to delete the original file.");
+			return; // Exit the method if deletion fails
+		}
+
+		// Rename the temporary file to the original file name
+		if (tempFile.renameTo(originalFile)) {
+			System.out.println("File update is complete.");
+		} else {
+			System.out.println("Failed to rename the temporary file.");
+		}
+
 	}
 
 }

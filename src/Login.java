@@ -201,6 +201,6 @@ public class Login extends JFrame {
 
 		contentPane.add(btnSubmit);
 		setVisible(true);
-		System.out.println(123);
+		System.out.println("Constructor with parameters");
 	}
 }
